@@ -1,6 +1,6 @@
 # 🎵 Spotify Playlist Converter for SpoFree
 
-a simple tool designed to bridge the gap between full spotify exports and the **SpoFree** website. it deletes the clutter and guarantees an error-free import into [SpoFree](https://spo.free.nf).
+a simple tool designed to simplify full spotify exports, so that you can import the playlist into the **SpoFree** website. it deletes the clutter and guarantees an error-free import into [SpoFree](https://spo.free.nf).
 
 ## ✨ features
 
