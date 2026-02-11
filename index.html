@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>spotify to spofree csv converter</title>
+    <style>
+        :root {
+            --spotify-green: #1db954;
+            --spotify-black: #121212;
+            --spotify-dark-grey: #181818;
+            --spotify-light-grey: #282828;
+            --spotify-white: #ffffff;
+        }
+
+        body {
+            font-family: 'Circular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--spotify-black);
+            color: var(--spotify-white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .card {
+            background: linear-gradient(180deg, #222222 0%, var(--spotify-dark-grey) 100%);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        p {
+            color: #b3b3b3;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        /* custom file upload */
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-label {
+            display: block;
+            background-color: var(--spotify-light-grey);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .custom-file-label:hover {
+            background-color: #3e3e3e;
+            border-color: #555;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            background-color: var(--spotify-green);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.3, 0, 0, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: scale(1.04);
+            background-color: #1ed760;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background-color: #535353;
+            color: #b3b3b3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #download {
+            background-color: transparent;
+            border: 1px solid #878787;
+        }
+
+        #download:not(:disabled):hover {
+            border-color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            height: 20px;
+            color: var(--spotify-green);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .show-status {
+            opacity: 1 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>spotify to spofree convert</h2>
+        <p>export your playlists to a .csv <a href="https://exportify.net">here</a></p>
+        
+        <div class="file-upload">
+            <label for="fileInput" class="custom-file-label" id="fileName">choose exported csv file</label>
+            <input type="file" id="fileInput" accept=".csv" onchange="updateFileName()">
+        </div>
+        
+        <div class="buttons">
+            <button onclick="processFile()">convert</button>
+            <button id="download" onclick="downloadCsv()" disabled>download spofree csv</button>
+        </div>
+        
+        <div id="status">ready for conversion</div>
+    </div>
+
+    <script>
+        let convertedContent = "";
+
+        function updateFileName() {
+            const input = document.getElementById('fileInput');
+            const label = document.getElementById('fileName');
+            if (input.files.length > 0) {
+                label.innerText = input.files[0].name;
+            }
+        }
+
+        function processFile() {
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('status');
+            
+            if (!fileInput.files[0]) {
+                status.innerText = "no file selected";
+                status.style.color = "#ff4444";
+                status.classList.add('show-status');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/);
+                let result = "Song title - artist\n";
+
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    const parts = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (parts.length > 3) {
+                        const title = parts[1].replace(/"/g, '').trim();
+                        const artist = parts[3].replace(/"/g, '').trim();
+                        result += `"${title} - ${artist}"\n`;
+                    }
+                }
+
+                convertedContent = result;
+                document.getElementById('download').disabled = false;
+                status.innerText = "successfully converted";
+                status.style.color = "#1db954";
+                status.classList.add('show-status');
+            };
+            reader.readAsText(fileInput.files[0]);
+        }
+
+        function downloadCsv() {
+            const blob = new Blob([convertedContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'spotify_playlist.csv';
+            a.click();
+        }
+    </script>
+</body>
+</html>
